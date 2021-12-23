@@ -1,0 +1,58 @@
+FROM arm32v7/ubuntu:20.04 as base
+ENV DEBIAN_FRONTEND=noninteractive
+# See http://bugs.python.org/issue19846
+ENV LANG C.UTF-8
+# https://github.com/tensorflow/tensorflow/tree/master/tensorflow/tools/dockerfiles/dockerfiles
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install apt dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    protobuf-compiler \
+    wget \
+    curl \
+    git \
+    gpg-agent \
+    gnupg \
+    libgl1 \
+    libglib2.0-0 \
+    unzip \
+    libstdc++6 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -s $(which python3) /usr/local/bin/python
+
+# Update pip/setuptools
+RUN python3 -m pip --no-cache-dir install --upgrade \
+    pip \
+    setuptools
+
+# Install tensorflow python dependencies for which there are good packages.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-h5py && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# No good libclang wheel is available for armv7l which is required for tensorflow
+ADD libclang-12.0.0-py2.py3-none-linux_armv7l.whl /tmp/libclang-12.0.0-py2.py3-none-linux_armv7l.whl
+RUN python3 -m pip install --no-cache-dir /tmp/libclang-12.0.0-py2.py3-none-linux_armv7l.whl && rm /tmp/libclang-12.0.0-py2.py3-none-linux_armv7l.whl
+
+# Install dependancies for Tensorflow
+ADD tensorflow_io_gcs_filesystem-0.23.1-cp38-cp38-linux_armv7l.whl /tmp/tensorflow_io_gcs_filesystem-0.23.1-cp38-cp38-linux_armv7l.whl
+RUN python3 -m pip install --no-cache-dir /tmp/tensorflow_io_gcs_filesystem-0.23.1-cp38-cp38-linux_armv7l.whl && rm /tmp/tensorflow_io_gcs_filesystem-0.23.1-cp38-cp38-linux_armv7l.whl
+ADD tensorflow_io-0.23.1-cp38-cp38-linux_armv7l.whl /tmp/tensorflow_io-0.23.1-cp38-cp38-linux_armv7l.whl
+RUN python3 -m pip install --no-cache-dir /tmp/tensorflow_io-0.23.1-cp38-cp38-linux_armv7l.whl && rm /tmp/tensorflow_io-0.23.1-cp38-cp38-linux_armv7l.whl
+
+# Install Tensorflow
+ADD tensorflow-2.7.0-cp38-none-linux_armv7l.whl /tmp/tensorflow-2.7.0-cp38-none-linux_armv7l.whl
+RUN python3 -m pip install --no-cache-dir /tmp/tensorflow-2.7.0-cp38-none-linux_armv7l.whl && rm /tmp/tensorflow-2.7.0-cp38-none-linux_armv7l.whl
+
+# Some TF tools expect a "python" binary
+RUN ln -s $(which python3) /usr/local/bin/python
+
+ADD https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/tools/dockerfiles/bashrc /etc/bash.bashrc
+RUN chmod a+rwx /etc/bash.bashrc
