@@ -1,0 +1,42 @@
+FROM arm64v8/ubuntu:20.04 as base
+ENV DEBIAN_FRONTEND=noninteractive
+# See http://bugs.python.org/issue19846
+ENV LANG C.UTF-8
+# https://github.com/tensorflow/tensorflow/tree/master/tensorflow/tools/dockerfiles/dockerfiles
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install apt dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    python3-dev \
+    build-essential \
+    protobuf-compiler \
+    wget \
+    curl \
+    git \
+    gpg-agent \
+    gnupg \
+    libgl1 \
+    libglib2.0-0 \
+    unzip \
+    libstdc++6 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -s $(which python3) /usr/local/bin/python
+
+# Update pip/setuptools
+RUN python3 -m pip --no-cache-dir install --upgrade \
+    pip \
+    setuptools
+
+# Install dependancies for Tensorflow
+RUN python3 -m pip install --no-cache-dir https://github.com/snowzach/tensorflow-on-arm/releases/download/v2.7.0/tensorflow_io_gcs_filesystem-0.23.1-cp38-cp38-linux_aarch64.whl
+RUN python3 -m pip install --no-cache-dir https://github.com/snowzach/tensorflow-on-arm/releases/download/v2.7.0/tensorflow_io-0.23.1-cp38-cp38-linux_aarch64.whl
+
+# Install Tensorflow
+RUN python3 -m pip install --no-cache-dir https://github.com/snowzach/tensorflow-on-arm/releases/download/v2.7.0/tensorflow-2.7.0-cp38-none-linux_aarch64.whl
+
+ADD https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/tools/dockerfiles/bashrc /etc/bash.bashrc
+RUN chmod a+rwx /etc/bash.bashrc
