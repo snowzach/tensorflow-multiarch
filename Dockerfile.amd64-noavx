@@ -20,7 +20,7 @@ RUN python3 -m pip --no-cache-dir install --upgrade \
     setuptools
 
 # Install Tensorflow - NOAVX
-RUN python3 -m pip install --no-cache-dir https://github.com/snowzach/tensorflow-on-arm/releases/download/v2.7.0/tensorflow-2.7.0+noavx-cp38-cp38-linux_x86_64.whl
+RUN python3 -m pip install --no-cache-dir https://github.com/snowzach/tensorflow-multiarch/releases/download/v2.7.0/tensorflow-2.7.0+noavx-cp38-cp38-linux_x86_64.whl
 
 ADD https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/tools/dockerfiles/bashrc /etc/bash.bashrc
 RUN chmod a+rwx /etc/bash.bashrc

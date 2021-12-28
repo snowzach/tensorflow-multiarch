@@ -75,8 +75,8 @@ docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 # Build the docker images
 docker buildx build --push --platform linux/arm/v7 -f Dockerfile.armv7l --tag docker.io/snowzach/tensorflow-multiarch:2.7.0-armv7l .
-docker buildx build --push --platform linux/arm64/v8 -f Dockerfile.aarch64 --tag docker.io/snowzach/tensorflow-multiarch:2.7.0-aarch64 -f Dockerfile.aarch64 .
-docker build -f Dockerfile.amd64-noavx --tag docker.io/snowzach/tensorflow-multiarch:2.7.0-amd64-noavx -f Dockerfile.amd64-noavx .
+docker buildx build --push --platform linux/arm64/v8 -f Dockerfile.aarch64 --tag docker.io/snowzach/tensorflow-multiarch:2.7.0-aarch64 .
+docker build -f Dockerfile.amd64-noavx --tag docker.io/snowzach/tensorflow-multiarch:2.7.0-amd64-noavx .
 docker push docker.io/snowzach/tensorflow-multiarch:2.7.0-amd64-noavx
 
 # Tag the releases as 2.7.0
