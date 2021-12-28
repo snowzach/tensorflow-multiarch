@@ -1,12 +1,19 @@
-# TENSORFLOW-ON-ARM
+# TENSORFLOW-MULTIARCH
 
-This is my attempt to build a recent Tensorflow wheel and Docker image compatible with ARM32 and ARM64 devices. 
+This is my attempt to build a recent Tensorflow wheel and Docker image compatible with multiple architectures and processors. 
 
-- Tensorflow v2.7.0
+It's currently using Tensorflow v2.7.0
 
-The wheels are in the [release](https://github.com/snowzach/tensorflow-on-arm/releases) section
+It supports the following architectures:
+- ARM32
+- AARCH64
+- X86_64 processors without AVX extensions.
 
-The docker images are `docker.io/snowzach/tensorflow-on-arm` [here](https://hub.docker.com/r/snowzach/tensorflow-on-arm)
+The wheels are in the [release](https://github.com/snowzach/tensorflow-multiarch/releases) section
+
+The docker images are `docker.io/snowzach/tensorflow-multiarch` [here](https://hub.docker.com/r/snowzach/tensorflow-multiarch)
+
+The default/latest docker images includes arm32, arm64 and amd64-noavx
 
 ## Compiling Tensorflow Wheel
 I checked out the Tensorflow source at version 2.7.0 and I had to edit the file `tensorflow/tools/ci_build/pi/build_raspberry_pi.sh` and insert on line 99 to add an ARMHF target.
@@ -63,19 +70,23 @@ The Dockerfiles for `aarch64` and `armv7l` are slightly different as each had pa
 I build them with docker buildx with these commands:
 
 ```
-# Build the docker images
+# Setup QEMU
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-docker buildx build --push --platform linux/arm/v7 -f Dockerfile.armv7l --tag docker.io/snowzach/tensorflow-on-arm:2.7.0-armv7l .
-docker buildx build --push --platform linux/arm64/v8 -f Dockerfile.aarch64 --tag docker.io/snowzach/tensorflow-on-arm:2.7.0-aarch64 -f Dockerfile.aarch64 .
+
+# Build the docker images
+docker buildx build --push --platform linux/arm/v7 -f Dockerfile.armv7l --tag docker.io/snowzach/tensorflow-multiarch:2.7.0-armv7l .
+docker buildx build --push --platform linux/arm64/v8 -f Dockerfile.aarch64 --tag docker.io/snowzach/tensorflow-multiarch:2.7.0-aarch64 -f Dockerfile.aarch64 .
+docker build -f Dockerfile.amd64-noavx --tag docker.io/snowzach/tensorflow-multiarch:2.7.0-amd64-noavx -f Dockerfile.amd64-noavx .
+docker push docker.io/snowzach/tensorflow-multiarch:2.7.0-amd64-noavx
 
 # Tag the releases as 2.7.0
-docker manifest push --purge docker.io/snowzach/tensorflow-on-arm:2.7.0
-docker manifest create docker.io/snowzach/tensorflow-on-arm:2.7.0 docker.io/snowzach/tensorflow-on-arm:2.7.0-armv7l docker.io/snowzach/tensorflow-on-arm:2.7.0-aarch64
-docker manifest push docker.io/snowzach/tensorflow-on-arm:2.7.0
+docker manifest push --purge docker.io/snowzach/tensorflow-multiarch:2.7.0
+docker manifest create docker.io/snowzach/tensorflow-multiarch:2.7.0 docker.io/snowzach/tensorflow-multiarch:2.7.0-armv7l docker.io/snowzach/tensorflow-multiarch:2.7.0-aarch64 docker.io/snowzach/tensorflow-multiarch:2.7.0-amd64-noavx
+docker manifest push docker.io/snowzach/tensorflow-multiarch:2.7.0
 
 # Tag the releases as latest
-docker manifest push --purge docker.io/snowzach/tensorflow-on-arm:latest
-docker manifest create docker.io/snowzach/tensorflow-on-arm:latest docker.io/snowzach/tensorflow-on-arm:2.7.0-armv7l docker.io/snowzach/tensorflow-on-arm:2.7.0-aarch64
-docker manifest push docker.io/snowzach/tensorflow-on-arm:latest
+docker manifest push --purge docker.io/snowzach/tensorflow-multiarch:latest
+docker manifest create docker.io/snowzach/tensorflow-multiarch:latest docker.io/snowzach/tensorflow-multiarch:2.7.0-armv7l docker.io/snowzach/tensorflow-multiarch:2.7.0-aarch64 docker.io/snowzach/tensorflow-multiarch:2.7.0-amd64-noavx
+docker manifest push docker.io/snowzach/tensorflow-multiarch:latest
 
 ```

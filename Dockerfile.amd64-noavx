@@ -1,0 +1,26 @@
+FROM ubuntu:20.04 as base
+ENV DEBIAN_FRONTEND=noninteractive
+# See http://bugs.python.org/issue19846
+ENV LANG C.UTF-8
+# https://github.com/tensorflow/tensorflow/tree/master/tensorflow/tools/dockerfiles/dockerfiles
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install apt dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    ln -s $(which python3) /usr/local/bin/python
+
+# Update pip/setuptools
+RUN python3 -m pip --no-cache-dir install --upgrade \
+    pip \
+    setuptools
+
+# Install Tensorflow - NOAVX
+RUN python3 -m pip install --no-cache-dir https://github.com/snowzach/tensorflow-on-arm/releases/download/v2.7.0/tensorflow-2.7.0+noavx-cp38-cp38-linux_x86_64.whl
+
+ADD https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/tools/dockerfiles/bashrc /etc/bash.bashrc
+RUN chmod a+rwx /etc/bash.bashrc
