@@ -1,19 +1,20 @@
 #!/bin/bash
-# docker run -it -v /data/git/video/doodsp:/doodsp ubuntu:20.04 /bin/bash
+# docker run -it -v /data/git/video/tensorflow-multiarch:/tensorflow-multiarch debian:bookworm /bin/bash
 export DEBIAN_FRONTEND=noninteractive
-export LANG C.UTF-8
+export LANG=C.UTF-8
 
 cd /tmp
 
 apt-get update && apt-get install -y --no-install-recommends \
     pkg-config zip zlib1g-dev unzip wget bash-completion git curl \
-    build-essential patch g++ cmake ca-certificates \
+    build-essential patch g++ clang cmake ca-certificates \
     python3 python3-dev python3-distutils python3-numpy python3-six \
-    libc6-dev libstdc++6 libusb-1.0-0
+    libc6-dev libstdc++6 libusb-1.0-0 patchelf llvm-16 clang-16
 
-export PROTOC_VERSION="3.14.0"
-export BAZEL_VERSION="3.7.2"
-export TF_VERSION="v2.7.0"
+export PROTOC_VERSION="3.20.3"
+export BAZEL_VERSION="6.1.0"
+export TF_VERSION="v2.14.0"
+export TF_PYTHON_VERSION=3.11
 
 # Install protoc
 wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip && \
@@ -35,6 +36,7 @@ export TF_NEED_GDR=0 TF_NEED_AWS=0 TF_NEED_GCP=0 TF_NEED_CUDA=0 TF_NEED_HDFS=0 T
 yes '' | ./configure
 
 # Build
-export BAZEL_COPT_FLAGS="--local_ram_resources=HOST_RAM*.5 --local_cpu_resources=HOST_CPUS*.75 --copt=-O3 --copt=-fomit-frame-pointer --config=noaws --config=nohdfs"
+export BAZEL_COPT_FLAGS="--local_ram_resources=HOST_RAM*.5 --local_cpu_resources=HOST_CPUS*.75 --copt=-O3 --copt=-fomit-frame-pointer --copt=-march=core2 --config=noaws --config=nohdfs"
 export BAZEL_EXTRA_FLAGS="--host_linkopt=-lm"
 bazel build -c opt $BAZEL_COPT_FLAGS --verbose_failures $BAZEL_EXTRA_FLAGS //tensorflow/tools/pip_package:build_pip_package
+bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg

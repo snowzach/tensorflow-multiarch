@@ -47,5 +47,3 @@ RUN python3 -m pip install --no-cache-dir https://github.com/snowzach/tensorflow
 # Install Tensorflow
 RUN python3 -m pip install --no-cache-dir https://github.com/snowzach/tensorflow-multiarch/releases/download/v2.7.0/tensorflow-2.7.0-cp38-none-linux_armv7l.whl
 
-ADD https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/tools/dockerfiles/bashrc /etc/bash.bashrc
-RUN chmod a+rwx /etc/bash.bashrc
